@@ -1,0 +1,51 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Chat with {{ other_user.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <a href="{% url 'profile' other_user.username %}" class="text-decoration-none text-dark d-flex align-items-center">
+                    {% if other_user.avatar %}
+                    <img src="{{ other_user.avatar.url }}" class="avatar me-2" alt="{{ other_user.username }}">
+                    {% else %}
+                    <div class="avatar me-2 bg-secondary text-white d-flex align-items-center justify-content-center">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    <h5 class="mb-0">{{ other_user.username }}</h5>
+                </a>
+            </div>
+            <div class="card-body chat-messages" style="height: 400px; overflow-y: auto;">
+                {% for message in messages %}
+                <div class="mb-3 {% if message.sender == request.user %}text-end{% endif %}">
+                    <div class="d-inline-block p-2 rounded {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}">
+                        {{ message.text }}
+                    </div>
+                    <div class="small text-muted">
+                        {{ message.created_at|time }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <form method="post" action="{% url 'send_message' chat.id %}" class="d-flex">
+                    {% csrf_token %}
+                    <input type="text" name="text" class="form-control me-2" placeholder="Type a message..." required>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Прокрутка вниз при загрузке чата
+    const messagesContainer = document.querySelector('.chat-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex align-items-center mb-5">
+            <div class="me-4">
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="profile-avatar" alt="{{ user.username }}">
+                {% else %}
+                <div class="profile-avatar bg-secondary text-white d-flex align-items-center justify-content-center">
+                    <i class="fas fa-user fa-3x"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <h2>{{ user.username }}</h2>
+                <p>{{ user.bio }}</p>
+                {% if is_owner %}
+                <a href="#" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
+                {% else %}
+                <button class="btn btn-primary btn-sm">Follow</button>
+                <button class="btn btn-outline-secondary btn-sm">Message</button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if is_owner %}
+        <div class="mb-4 p-3 bg-white rounded">
+            <h5>Create Post</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.caption }}
+                </div>
+                <div class="mb-3">
+                    {{ form.image }}
+                </div>
+                <button type="submit" class="btn btn-primary">Share</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            {% if posts %}
+                {% for post in posts %}
+                <div class="col-md-4 mb-4">
+                    <a href="#">
+                        <img src="{{ post.image.url }}" class="img-fluid rounded" alt="{{ post.caption }}">
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <h4>No posts yet</h4>
+                {% if is_owner %}
+                <p>Share your first photo</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

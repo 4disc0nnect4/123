@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        {% for post in posts %}
+        <div class="post-card p-3 mb-4">
+            <div class="d-flex align-items-center mb-3">
+                {% if post.user.avatar %}
+                <img src="{{ post.user.avatar.url }}" class="avatar me-2" alt="{{ post.user.username }}">
+                {% else %}
+                <div class="avatar me-2 bg-secondary text-white d-flex align-items-center justify-content-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <a href="{% url 'profile' post.user.username %}" class="text-decoration-none fw-bold text-dark">{{ post.user.username }}</a>
+            </div>
+            
+            <img src="{{ post.image.url }}" class="img-fluid rounded mb-2" alt="{{ post.caption }}">
+            
+            <div class="post-actions mb-2">
+                <form action="{% url 'like_post' post.id %}" method="post" class="d-inline like-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm">
+                        {% if request.user in post.likes.all %}
+                        <i class="fas fa-heart text-danger"></i>
+                        {% else %}
+                        <i class="far fa-heart"></i>
+                        {% endif %}
+                    </button>
+                </form>
+                <span class="like-count">{{ post.likes.count }}</span> likes
+            </div>
+            
+            <div class="mb-2">
+                <p class="mb-1"><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+                <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+            </div>
+            
+            <div class="comments mb-3">
+                {% for comment in post.comments.all|slice:":3" %}
+                <p class="mb-1"><strong>{{ comment.user.username }}</strong> {{ comment.text }}</p>
+                {% endfor %}
+                {% if post.comments.count > 3 %}
+                <a href="#" class="text-decoration-none">View all {{ post.comments.count }} comments</a>
+                {% endif %}
+            </div>
+            
+            <form action="{% url 'add_comment' post.id %}" method="post" class="comment-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    {{ comment_form.text }}
+                    <button type="submit" class="btn btn-outline-secondary">Post</button>
+                </div>
+            </form>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <h4>No posts available</h4>
+            <p>Follow users to see their posts here</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

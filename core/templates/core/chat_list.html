@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Chats{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Messages</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for chat in chats %}
+                <a href="{% url 'chat_detail' chat.id %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex align-items-center">
+                        {% if chat.other_user.avatar %}
+                        <img src="{{ chat.other_user.avatar.url }}" class="avatar me-3" alt="{{ chat.other_user.username }}">
+                        {% else %}
+                        <div class="avatar me-3 bg-secondary text-white d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ chat.other_user.username }}</h6>
+                            {% if chat.last_message %}
+                            <small class="text-muted">
+                                {% if chat.last_message.sender == request.user %}You: {% endif %}
+                                {{ chat.last_message.text|truncatechars:20 }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="list-group-item text-center py-5">
+                    <p>No messages yet</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                        Start a conversation
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal fade" id="newChatModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control mb-3" placeholder="Search users..." id="userSearch">
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.getElementById('userSearch').addEventListener('input', function() {
+        const query = this.value;
+        if(query.length > 2) {
+            fetch(`{% url 'search_users' %}?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const results = document.getElementById('searchResults');
+                    results.innerHTML = '';
+                    data.users.forEach(user => {
+                        const userElement = document.createElement('div');
+                        userElement.className = 'd-flex align-items-center p-2 border-bottom';
+                        userElement.innerHTML = `
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">${user.username}</h6>
+                            </div>
+                            <a href="{% url 'create_chat' 0 %}".replace('0', user.id)" class="btn btn-sm btn-outline-primary">Message</a>
+                        `;
+                        results.appendChild(userElement);
+                    });
+                });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
